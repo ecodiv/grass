@@ -1,7 +1,7 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
-### Inspired by https://svn.osgeo.org/gdal/trunk/gdal/Vagrantfile
+### Inspired by https://github.com/OSGeo/gdal/blob/master/Vagrantfile
 
 require 'socket'
 
@@ -63,14 +63,16 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       "proj-bin",
       "libreadline-dev",
       "libsqlite3-dev",
-      "libwxgtk3.0-dev",
+      "libwxgtk3.0-gtk3-dev",
       "libxmu-dev",
-      "python",
-      "python-wxgtk3.0",
-      "python-dev",
-      "python-numpy",
-      "python-ply",
-      "python-pil",
+      "python3",
+      "python3-wxgtk4.0",
+      "python3-dateutil",
+      "python3-dev",
+      "python3-numpy",
+      "python3-ply",
+      "python3-pil",
+      "python3-six",
       "libnetcdf-dev",
       "netcdf-bin",
       "libblas-dev",
@@ -102,11 +104,11 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       scripts = [
       "clean.sh",
       ];
-      scripts.each { |script| host.vm.provision :shell, :privileged => false, :path => "tools/vagrant/" << script }
+      scripts.each { |script| host.vm.provision :shell, :privileged => false, :path => "utils/vagrant/" << script }
     end
     scripts = [
       "compile.sh",
     ];
-    scripts.each { |script| host.vm.provision :shell, :privileged => false, :path => "tools/vagrant/" << script }
+    scripts.each { |script| host.vm.provision :shell, :privileged => false, :path => "utils/vagrant/" << script }
   end
 end

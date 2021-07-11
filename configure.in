@@ -31,11 +31,24 @@ $2
 AC_INIT(configure.in)
 AC_PREREQ(2.13)
 AC_PREFIX_DEFAULT(/usr/local)
-AC_CONFIG_HEADER(include/config.h)
+AC_CONFIG_HEADER(include/grass/config.h)
 AC_CANONICAL_HOST
 AC_PROG_CC
 LOC_EXEEXT
 AC_SUBST(MINGW32)
+
+# Set WINDRES
+
+if test "$MINGW32" = yes ; then
+  WINDRES=${WINDRES-windres}
+else
+  WINDRES=
+fi
+
+AC_SUBST(WINDRES)
+
+# Check for custom PKG_CONFIG
+PKG_CONFIG=${PKG_CONFIG-pkg-config}
 
 # Check for full floating-point support, including Infinity and NaN
 IEEEFLAG=
@@ -64,7 +77,7 @@ AC_SUBST(BINDIR)
 
 AC_PATH_PROG(pwd, pwd, pwd)
 
-if test "$MINGW32" = yes ; then
+if test "$MINGW32" = yes -a "$cross_compiling" != yes ; then
   winpwd="pwd -W"
 else
   winpwd="$pwd"
@@ -127,11 +140,23 @@ LIB_VER=`echo ${GRASS_VERSION_NUMBER} | sed 's/^\([0-9.]*\).*$/\1/'`
 changequote([,])
 
 GRASS_VERSION_GIT="exported"
+# get git short hash + date of last change in GRASS headers
+# (and anything else in include)
+GRASS_HEADERS_GIT_HASH=`date -u +%FT%T%z | sed 's/\(..\)$/:\1/'`
+GRASS_HEADERS_GIT_DATE=`date -u +%FT%T%z | sed 's/\(..\)$/:\1/'`
 AC_PATH_PROG(GIT, git, no)
 if test "$GIT" != "no" ; then
    GRASS_VERSION_GIT=`$GIT rev-parse --short HEAD 2>/dev/null`
    if test -z "$GRASS_VERSION_GIT"; then
       GRASS_VERSION_GIT="exported"
+   fi
+   GRASS_HEADERS_GIT_HASH=`$GIT log -1 --pretty=format:"%h" -- "${SRCDIR}/include" 2>/dev/null`
+   if test -z "$GRASS_HEADERS_GIT_HASH"; then
+      GRASS_HEADERS_GIT_HASH=`date -u +%FT%T%z | sed 's/\(..\)$/:\1/'`
+   fi
+   GRASS_HEADERS_GIT_DATE=`date -d $($GIT log -1 --pretty=format:"%cI" -- "${SRCDIR}/include") -u +%FT%T%z | sed 's/\(..\)$/:\1/'` 2>/dev/null
+   if test -z "$GRASS_HEADERS_GIT_DATE"; then
+      GRASS_HEADERS_GIT_DATE=`date -u +%FT%T%z | sed 's/\(..\)$/:\1/'`
    fi
 fi
 
@@ -142,6 +167,8 @@ AC_SUBST(GRASS_VERSION_RELEASE)
 AC_SUBST(GRASS_VERSION_NUMBER)
 AC_SUBST(GRASS_VERSION_DATE)
 AC_SUBST(GRASS_VERSION_GIT)
+AC_SUBST(GRASS_HEADERS_GIT_HASH)
+AC_SUBST(GRASS_HEADERS_GIT_DATE)
 AC_SUBST(NAME_VER)
 AC_SUBST(LIB_VER)
 
@@ -677,6 +704,7 @@ PROJINC=
 PROJLIB=
 PROJSHARE=
 PROJ4API=0
+PROJMAJOR=4
 
 # With PROJ includes directory
 
@@ -690,11 +718,22 @@ if test $PROJ4API = 0 ; then
     LOC_CHECK_VERSION_INT(proj.h,PROJ_VERSION_MINOR,External PROJ minor,proj_ver_minor,$PROJINC,0)
     LOC_CHECK_VERSION_INT(proj.h,PROJ_VERSION_PATCH,External PROJ patch,proj_ver_patch,$PROJINC,0)
     AC_MSG_RESULT([found PROJ version "${proj_ver_major}.${proj_ver_minor}.${proj_ver_patch}"])
+    PROJMAJOR=${proj_ver_major}
     # minimum required PROJ 5+ version to use the new PROJ API: 5.1.0
     if test ${proj_ver_major} = 5 && test `expr ${proj_ver_minor} \< 1` = 1 ; then
 	AC_MSG_WARN([At least PROJ version "5.1.0" is required for the new API ])
 	PROJ4API=1
     fi
+else
+    LOC_CHECK_VERSION_INT(proj_api.h,PJ_VERSION,External PROJ.4,proj_ver,$PROJINC,0)
+    if test `expr ${proj_ver} \>= 600` = 1 ; then
+	PROJMAJOR=6
+    elif test `expr ${proj_ver} \>= 500` = 1 ; then
+	PROJMAJOR=5
+    elif test `expr ${proj_ver} \>= 400` = 1 ; then
+	PROJMAJOR=4
+    fi
+    AC_MSG_RESULT([found PROJ version "${proj_ver}"])
 fi
 
 if test $PROJ4API = 0 ; then
@@ -735,14 +774,17 @@ if test -z "$PROJSHARE" ; then
     PROJSHARE=/usr/share/proj
 fi
 
-# LOC_CHECK_SHARE does not work when cross compiling
-if test "$cross_compiling" = "yes" ; then
-    AC_MSG_CHECKING([for epsg])
-    AC_MSG_RESULT([unknown (cross-compiling)])
-else
-    LOC_CHECK_SHARE(epsg,External PROJ,$PROJSHARE,[
-    AC_MSG_WARN([*** Unable to locate PROJ data files.])
-    ])
+# check if share/proj/epsg exists only for PROJ < 6
+if test `expr ${PROJMAJOR} \< 6` = 1 ; then
+    # LOC_CHECK_SHARE does not work when cross compiling
+    if test "$cross_compiling" = "yes" ; then
+	AC_MSG_CHECKING([for epsg])
+	AC_MSG_RESULT([unknown (cross-compiling)])
+    else
+	LOC_CHECK_SHARE(epsg,External PROJ,$PROJSHARE,[
+	AC_MSG_WARN([*** Unable to locate PROJ data files.])
+	])
+    fi
 fi
 
 AC_SUBST(PROJINC)
@@ -1643,14 +1685,14 @@ if test -n "$USE_X11"; then
 	pkgs="$pkgs cairo-xlib cairo-xlib-xrender"
 fi
 for pkg in $pkgs ; do
-    if pkg-config --exists $pkg ; then
+    if $PKG_CONFIG --exists $pkg ; then
         cairo="$cairo $pkg"
     fi
 done
 
 # With Cairo includes directory
 #FIXME: somehow quote dirs with spaces in $cairo ?
-CAIROINC=`pkg-config --cflags $cairo`
+CAIROINC=`$PKG_CONFIG --cflags $cairo`
 
 LOC_CHECK_INC_PATH(cairo,cairo,CAIROINC)
 
@@ -1658,7 +1700,7 @@ LOC_CHECK_INCLUDES(cairo.h,Cairo,$CAIROINC)
 
 # With Cairo library directory
 
-CAIROLIB=`pkg-config --libs $cairo`
+CAIROLIB=`$PKG_CONFIG --libs $cairo`
 
 LOC_CHECK_LIB_PATH(cairo,cairo,CAIROLIB)
 LOC_CHECK_LDFLAGS(cairo,cairo,CAIROLIB)
@@ -1945,7 +1987,7 @@ AC_SUBST(STRIPFLAG)
 GRASS_HOME="${DSTDIR}"
 AC_SUBST(GRASS_HOME)
 
-AC_OUTPUT(include/Make/Platform.make include/Make/Doxyfile_arch_html include/Make/Doxyfile_arch_latex include/version.h grass.pc)
+AC_OUTPUT(include/Make/Platform.make include/Make/Doxyfile_arch_html include/Make/Doxyfile_arch_latex include/grass/version.h grass.pc)
 
 LOC_MSG([Copying config.status to config.status.${ARCH}])
 cp -f config.status config.status.${ARCH}

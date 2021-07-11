@@ -11,6 +11,8 @@ struct band_info
     GDALDataType gdal_type;
     int has_null;
     double null_val;
+    DCELL minmax[2];
+    int have_minmax;
     struct Colors colors;
 };
 
@@ -18,6 +20,9 @@ enum flip {
     FLIP_H = 1,
     FLIP_V = 2,
 };
+
+/* colors.c */
+void transfer_colormap(GDALRasterBandH, const char *);
 
 /* link.c */
 void query_band(GDALRasterBandH, const char *,

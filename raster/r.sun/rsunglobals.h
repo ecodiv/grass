@@ -54,8 +54,10 @@ extern const double pi2;
 extern const double deg2rad;
 extern const double rad2deg;
 
+extern double solar_constant;
+
 extern struct pj_info iproj;
 extern struct pj_info oproj;
 
 
-extern void (*func) (int, int);
+/* extern void (*func) (int, int); */

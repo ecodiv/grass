@@ -39,7 +39,7 @@ the <em>connect</em> operation, some lines will share the same
 category. In order to assign unique costs to each line, a new layer 
 needs to be created with<br>
 <!-- like this it is rather useless, still to be improved (eg as a full example below!) -->
-<tt>v.category map=yourmap option=add cat=1 step=1 layer=3 output=newmap</tt><br>
+<tt>v.category input=yourmap option=add cat=1 step=1 layer=3 output=newmap</tt><br>
 followed by<br>
 <tt>v.db.addtable map=newmap layer=3 table=tablename</tt>.</li>
 
@@ -102,7 +102,7 @@ Turntable name consists of output vector map name + "_turntable_" + "t" + "_" + 
 <!--<em><a href="v.net.steiner.html">v.net.steiner</a></em>.-->
 
 For more information about turns in the vector network analyses see 
-<a href="http://grasswiki.osgeo.org/wiki/Turns_in_the_vector_network_analysis">wiki page</a>.
+<a href="https://grasswiki.osgeo.org/wiki/Turns_in_the_vector_network_analysis">wiki page</a>.
 
 <p>
 Once a vector network has been created, it can be analyzed in a 
@@ -212,7 +212,8 @@ v.net operation=turntable in=railroads out=railroads_ttb
 
 <em>
 <a href="g.gui.vdigit.html">g.gui.vdigit</a>,
-<a href="v.edit.html">v.edit</a>
+<a href="v.edit.html">v.edit</a>,
+<a href="wxGUI.vnet.html">Vector Network Analysis Tool</a>
 </em>
 
 <p>
@@ -252,5 +253,7 @@ Implementation: Stepan Turek
 Documentation: Lukas Bocan
 Mentor: Martin Landa
 
+<!--
 <p>
 <i>Last changed: $Date$</i>
+-->

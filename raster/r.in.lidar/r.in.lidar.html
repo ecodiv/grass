@@ -454,7 +454,7 @@ g.region -e
 <h3>Serpent Mound dataset</h3>
 
 This example is analogous to the example used in the GRASS wiki page for
-<a href="http://grasswiki.osgeo.org/wiki/LIDAR#Import_LAS_as_raster_DEM">importing LAS as raster DEM</a>.
+<a href="https://grasswiki.osgeo.org/wiki/LIDAR#Import_LAS_as_raster_DEM">importing LAS as raster DEM</a>.
 <p>The sample LAS data are in the file "Serpent Mound Model LAS Data.las", 
 available at 
 <a href="http://www.appliedimagery.com/downloads/sampledata/Serpent%20Mound%20Model%20LAS%20Data.las">appliedimagery.com</a>:
@@ -537,16 +537,16 @@ Python module:
 
 <div class="code"><pre>
 import glob
-import gscript
+import grass.script as gs
     
 file_list_name = '/home/user/data/filelist.txt'
 with open(, mode='w') as file_list:
     for path in glob.iglob('/home/user/data/lidar/*.las'):
         file_list.write(path + "\n")
 
-gscript.run_command('r.in.lidar', file=file_list_name,
-                    output='mean_height_above_ground',
-                    base_raster='elevation' method='mean')
+gs.run_command('r.in.lidar', file=file_list_name,
+               output='mean_height_above_ground',
+               base_raster='elevation' method='mean')
 </pre></div>
 
 
@@ -603,7 +603,7 @@ V. Petras, A. Petrasova, J. Jeziorska, H. Mitasova (2016):
 <em>Processing UAV and lidar point clouds in GRASS GIS</em>.
 XXIII ISPRS Congress 2016 [<a href="http://www.int-arch-photogramm-remote-sens-spatial-inf-sci.net/XLI-B7/945/2016/">ISPRS Archives</a>, <a href="https://www.researchgate.net/publication/304340172_Processing_UAV_and_lidar_point_clouds_in_GRASS_GIS">ResearchGate</a>]
 <li>
-<a href="http://www.asprs.org/Committee-General/LASer-LAS-File-Format-Exchange-Activities.html">
+<a href="https://www.asprs.org/committee-general/laser-las-file-format-exchange-activities.html">
 ASPRS LAS format</a>
 <li>
 <a href="http://www.liblas.org/">LAS library</a>
@@ -615,9 +615,12 @@ ASPRS LAS format</a>
 
 Markus Metz<br>
 Vaclav Petras,
-<a href="http://geospatial.ncsu.edu/osgeorel/">NCSU GeoForAll Lab</a>
+<a href="https://geospatial.ncsu.edu/geoforall/">NCSU GeoForAll Lab</a>
 (base_raster option, documentation)
 <br>
 based on <em>r.in.xyz</em> by Hamish Bowman and Volker Wichmann<br>
 
-<p><i>Last changed: $Date$</i>
+<!--
+<p>
+<i>Last changed: $Date$</i>
+-->

@@ -200,12 +200,14 @@ int main(int argc, char *argv[])
     }
     method_opt->options = p;
     method_opt->description = _("Method for aggregate statistics");
+    method_opt->guisection = _("Statistics");
 
     point_column_opt = G_define_standard_option(G_OPT_DB_COLUMN);
     point_column_opt->key = "points_column";
     point_column_opt->label =
 	_("Column name of points map to use for statistics");
     point_column_opt->description = _("Column of points map must be numeric");
+    point_column_opt->guisection = _("Statistics");
 
     count_column_opt = G_define_standard_option(G_OPT_DB_COLUMN);
     count_column_opt->key = "count_column";
@@ -213,12 +215,14 @@ int main(int argc, char *argv[])
     count_column_opt->label = _("Column name to upload points count");
     count_column_opt->description =
 	_("Column to hold points count, must be of type integer, will be created if not existing");
+    count_column_opt->guisection = _("Statistics");
 
     stats_column_opt = G_define_standard_option(G_OPT_DB_COLUMN);
     stats_column_opt->key = "stats_column";
     stats_column_opt->label = _("Column name to upload statistics");
     stats_column_opt->description =
 	_("Column to hold statistics, must be of type double, will be created if not existing");
+    stats_column_opt->guisection = _("Statistics");
 
     fs_opt = G_define_standard_option(G_OPT_F_SEP);
     fs_opt->guisection = _("Print");
@@ -280,8 +284,8 @@ int main(int argc, char *argv[])
     if ((mapset = G_find_vector2(area_opt->answer, "")) == NULL)
 	G_fatal_error(_("Vector map <%s> not found"), area_opt->answer);
     if (!print_flag->answer && strcmp(mapset, G_mapset()) != 0)
-	G_fatal_error(_("Vector map <%s> is not in user mapset and cannot be updated"),
-		      area_opt->answer);
+	G_fatal_error(_("Vector map <%s> is not in the current mapset <%s> and cannot be updated"),
+		      area_opt->answer, G_mapset());
 
     Vect_set_open_level(2);
     if (Vect_open_old(&AIn, area_opt->answer, mapset) < 0)
@@ -483,6 +487,9 @@ int main(int argc, char *argv[])
 	for (i = 0; i < ACats->n_cats; i++) {
 
 	    if (ACats->field[i] == area_field) {
+		if (acat_list && !Vect_cat_in_cat_list(ACats->cat[i], acat_list)) {
+		    continue;
+		}
 		Area_cat[nacats].area_cat = ACats->cat[i];
 		Area_cat[nacats].count = 0;
 		Area_cat[nacats].nvalues = 0;
@@ -581,6 +588,10 @@ int main(int argc, char *argv[])
 		    tmp_cat = -1;
 		    for (j = 0; j < PCats->n_cats; j++) {
 			if (PCats->field[j] == point_field) {
+			    if (pcat_list && !Vect_cat_in_cat_list(PCats->cat[j], pcat_list)) {
+				continue;
+			    }
+
 			    if (tmp_cat >= 0)
 				G_debug(3,
 					"More cats found in point layer (point=%d)",
@@ -623,6 +634,11 @@ int main(int argc, char *argv[])
 		search_ai.area_cat = -1;
 		for (j = 0; j < ACats->n_cats; j++) {
 		    if (ACats->field[j] == area_field) {
+			if (acat_list && !Vect_cat_in_cat_list(ACats->cat[j], acat_list)) {
+			    continue;
+			}
+
+
 			if (search_ai.area_cat >= 0)
 			    G_debug(3,
 				    "More cats found in area layer (area=%d)",

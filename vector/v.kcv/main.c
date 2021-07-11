@@ -9,7 +9,7 @@
  *
  * PURPOSE:    Randomly partition points into test/train sets.
  *
- * COPYRIGHT:  (C) 2001-2014 by James Darrell McCauley, and the GRASS Development Team
+ * COPYRIGHT:  (C) 2001-2020 by James Darrell McCauley, and the GRASS Development Team
  *
  *             This program is free software under the GNU General
  *             Public License (>=v2).  Read the file COPYING that
@@ -56,6 +56,7 @@ int main(int argc, char *argv[])
     G_add_keyword(_("statistics"));
     G_add_keyword(_("points"));
     G_add_keyword(_("point pattern"));
+    G_add_keyword(_("sampling"));
     module->description =
 	_("Randomly partition points into test/train sets.");
 
@@ -84,7 +85,7 @@ int main(int argc, char *argv[])
     if (np < 2)
 	G_fatal_error(_("'%s' must be > 1"), npart_opt->key);
 
-    /* FIXME - allow seed to be specified for repeatability */
+    /* You can set GRASS_RANDOM_SEED for repeatability */
     G_srand48_auto();
 
     Points = Vect_new_line_struct();

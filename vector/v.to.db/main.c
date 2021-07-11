@@ -7,7 +7,7 @@
  *               Glynn Clements <glynn gclements.plus.com>,
  *               Markus Neteler <neteler itc.it>
  * PURPOSE:      load values from vector to database
- * COPYRIGHT:    (C) 2000-2010 by the GRASS Development Team
+ * COPYRIGHT:    (C) 2000-2020 by the GRASS Development Team
  *
  *               This program is free software under the GNU General Public
  *               License (>=v2). Read the file COPYING that comes with GRASS
@@ -39,12 +39,20 @@ int main(int argc, char *argv[])
     G_add_keyword(_("attribute table"));
     G_add_keyword(_("database"));
     G_add_keyword(_("area"));
-    G_add_keyword(_("length"));
-    G_add_keyword(_("perimeter"));
-    G_add_keyword(_("coordinates"));
+    G_add_keyword(_("azimuth"));
     G_add_keyword(_("bounding box"));
     G_add_keyword(_("category"));
+    G_add_keyword(_("compactness"));
+    G_add_keyword(_("coordinates"));
+    G_add_keyword(_("fractal"));
+    G_add_keyword(_("geometry"));
+    G_add_keyword(_("length"));
+    G_add_keyword(_("perimeter"));
+    G_add_keyword(_("sides"));
+    G_add_keyword(_("sinuous"));
+    G_add_keyword(_("slope"));
     module->description = _("Populates attribute values from vector features.");
+    module->overwrite = 1;
 
     parse_command_line(argc, argv);
 
@@ -200,8 +208,12 @@ int main(int argc, char *argv[])
 			}
 		    }
 
-		    G_warning(_("Values in column <%s> will be overwritten"),
-			      options.col[col]);
+		    if (G_get_overwrite())
+			G_warning(_("Values in column <%s> will be overwritten"),
+				  options.col[col]);
+		    else
+			G_fatal_error(_("Column <%s> exists. To overwrite, use the --overwrite flag"),
+				      options.col[col]);
 
 		    break;
 		}
@@ -389,6 +401,14 @@ int main(int argc, char *argv[])
 
     if (!(options.print || options.total)) {
 	print_stat();
+
+	if (Vect_open_update_head(&Map, options.name, "") < 0)
+	    G_warning(_("Unable to write history for vector map <%s>"),
+		      options.name);
+	else {
+	    Vect_hist_command(&Map);
+	    Vect_close(&Map);
+	}
     }
 
     /* free list */

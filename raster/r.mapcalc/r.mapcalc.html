@@ -216,6 +216,9 @@ This syntax permits the development of neighborhood-type filters within a single
 map or across multiple maps.
 <p>
 
+The neighborhood modifier cannot be used on maps generated within same <em>r.mapcalc</em>
+command run (see "KNOWN ISSUES" section).
+<p>
 
 <h3>Raster map layer values from the category file</h3>
 
@@ -812,11 +815,11 @@ NULL cells. It is left to the user to utilize the <tt>isnull()</tt> function.
 
 <h2>REFERENCES</h2>
 
-<b><a href="http://grass.osgeo.org/uploads/grass/history_docs/mapcalc-algebra.pdf">r.mapcalc: An Algebra for GIS and Image
+<b><a href="https://grass.osgeo.org/gdp/raster/mapcalc-algebra.pdf">r.mapcalc: An Algebra for GIS and Image
 Processing</a></b>, by Michael Shapiro and Jim Westervelt, U.S. Army
 Construction Engineering Research Laboratory (March/1991).
 <p>
-<b><a href="http://grass.osgeo.org/uploads/grass/history_docs/mapcalc.pdf">Performing Map Calculations on GRASS Data:
+<b><a href="https://grass.osgeo.org/history_docs/mapcalc.pdf">Performing Map Calculations on GRASS Data:
 r.mapcalc Program Tutorial</a></b>, by Marji Larson, Michael Shapiro and Scott
 Tweddale, U.S. Army Construction Engineering Research Laboratory (December
 1991)
@@ -830,5 +833,7 @@ Michael Shapiro, U.S.Army Construction Engineering
 Research Laboratory
 <p>Glynn Clements
 
+<!--
 <p>
 <i>Last changed: $Date$</i>
+-->

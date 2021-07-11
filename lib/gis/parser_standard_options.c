@@ -52,6 +52,7 @@
    - G_OPT_I_SUBGROUP
 
   - raster:
+   - G_OPT_MEMORYMB
    - G_OPT_R_INPUT
    - G_OPT_R_INPUTS
    - G_OPT_R_OUTPUT
@@ -108,6 +109,7 @@
    - G_OPT_M_COLR
    - G_OPT_M_REGION
    - G_OPT_M_NULL_VALUE
+   - G_OPT_M_NPROCS
 
   - temporal GIS framework
    - G_OPT_STDS_INPUT
@@ -137,6 +139,7 @@
 struct Option *G_define_standard_option(int opt)
 {
     struct Option *Opt;
+    char *memstr;
 
     Opt = G_define_option();
 
@@ -245,6 +248,22 @@ struct Option *G_define_standard_option(int opt)
 	break;
 
 	/* raster maps */
+    case G_OPT_MEMORYMB:
+	Opt->key = "memory";
+	Opt->type = TYPE_INTEGER;
+	Opt->key_desc = "memory in MB";
+	Opt->required = NO;
+	Opt->multiple = NO;
+	Opt->answer = "300";
+	/* start dynamic answer */
+	/* check MEMORYMB in GISRC, set with g.gisenv */
+	memstr = G_store(G_getenv_nofatal("MEMORYMB"));
+	if (memstr && *memstr)
+	    Opt->answer = memstr;
+	/* end dynamic answer */
+	Opt->label = _("Maximum memory to be used (in MB)");
+	Opt->description = _("Cache size for raster rows");
+	break;
     case G_OPT_R_INPUT:
 	Opt->key = "input";
 	Opt->type = TYPE_STRING;
@@ -735,6 +754,15 @@ struct Option *G_define_standard_option(int opt)
         Opt->required = NO;
         Opt->gisprompt = "old,windows,region";
         Opt->description = _("Name of saved region");
+        break;
+
+    case G_OPT_M_NPROCS:
+        Opt->key = "nprocs";
+        Opt->type = TYPE_INTEGER;
+        Opt->required = NO;
+        Opt->multiple = NO;
+        Opt->answer = "1";
+        Opt->description = _("Number of threads for parallel computing");
         break;
 
     /* Spatio-temporal modules of the temporal GIS framework */

@@ -78,8 +78,9 @@ int main(int argc, char *argv[])
      *interpol;			/* interpolation method:
 				   nearest neighbor, bilinear, cubic */
 
-    struct Flag *c, *a;
+    struct Flag *c, *a, *pan_flag;
     struct GModule *module;
+
 
     G_gisinit(argv[0]);
 
@@ -107,13 +108,7 @@ int main(int argc, char *argv[])
     tres->required = NO;
     tres->description = _("Target resolution (ignored if -c flag used)");
 
-    mem = G_define_option();
-    mem->key = "memory";
-    mem->type = TYPE_DOUBLE;
-    mem->key_desc = "memory in MB";
-    mem->required = NO;
-    mem->answer = "300";
-    mem->description = _("Amount of memory to use in MB");
+    mem = G_define_standard_option(G_OPT_MEMORYMB);
 
     ipolname = make_ipol_list();
 
@@ -138,6 +133,10 @@ int main(int argc, char *argv[])
     a = G_define_flag();
     a->key = 'a';
     a->description = _("Rectify all raster maps in group");
+
+    pan_flag = G_define_flag();
+    pan_flag->key = 'p';
+    pan_flag->description = _("Enable panorama camera correction");
 
     if (G_parser(argc, argv))
 	exit(EXIT_FAILURE);
@@ -256,14 +255,18 @@ int main(int argc, char *argv[])
 		      group.name);
     }
 
+    /* panorama camera correction */
+    if (pan_flag->answer)
+	I_ortho_panorama();
+
+    /* get the target */
+    get_target(group.name);
+
     /* read the reference points for the group, compute image-to-photo trans. */
     get_ref_points(&group);
 
     /* read the control points for the group, convert to photo coords. */
     get_conz_points(&group);
-
-    /* get the target */
-    get_target(group.name);
 
     /* Check the GRASS_OVERWRITE environment variable */
     if ((overstr = getenv("GRASS_OVERWRITE")))  /* OK ? */

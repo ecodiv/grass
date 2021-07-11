@@ -259,17 +259,20 @@ int main(int argc, char *argv[])
 	point_cnt++;
     }
     G_progress(1, 1);
+    Vect_close(&Map);
     
     if (!print_flag->answer) {
+	if (Vect_open_update_head(&Map, opt.vect->answer, "") < 0)
+	    G_warning(_("Unable to write history for vector map <%s>"),
+		      opt.vect->answer);
 	Vect_set_db_updated(&Map);
 	Vect_hist_command(&Map);
-	Vect_set_db_updated(&Map); /* again? */
+	Vect_close(&Map);
     }
-    Vect_close(&Map);
 
     if (point_cnt < 1) {
-        G_important_message(_("No features of type (%s) found in vector map <%s>"),
-                            opt.type->answer, opt.vect->answer);
+        G_warning(_("No features of type (%s) found in the current computational region"),
+                  opt.type->answer);
         exit(EXIT_SUCCESS);
     }
     G_debug(1, "Read %d vector points", point_cnt);

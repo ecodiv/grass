@@ -91,6 +91,7 @@ int main(int argc, char **argv)
     DCELL *output_cell = NULL;
     double sigma, dmax, segmax, netmax, multip;
     char *tmpstr1, *tmpstr2;
+    struct History history;
 
     double **coordinate;
     double sigmaOptimal;
@@ -215,7 +216,7 @@ int main(int argc, char **argv)
     flag_normalize = G_define_flag();
     flag_normalize->key = 'n';
     flag_normalize->description =
-	_("In network mode, normalize values by sum of density multiplied by length of each segment. Integral over the output map then gives 1.0 * mult");
+	_("In network mode, normalize values by sum of density multiplied by length of each segment. Integral over the output map then gives 1.0 * multiplier");
     flag_normalize->guisection = _("Network");
 
     flag_multiply = G_define_flag();
@@ -226,7 +227,7 @@ int main(int argc, char **argv)
 
     G_option_required(out_opt, net_out_opt, NULL);
     G_option_exclusive(out_opt, net_out_opt, NULL);
-    /* this should be activated for GRASS 8
+    /* TODO: this should be activated for GRASS 8
     G_option_requires(net_opt, net_out_opt, NULL);
     */
     if (G_parser(argc, argv))
@@ -606,6 +607,10 @@ int main(int argc, char **argv)
         G_percent(1, 1, 1);
         
 	Rast_close(fdout);
+
+    Rast_short_history(out_opt->answer, "raster", &history);
+    Rast_command_history(&history);
+    Rast_write_history(out_opt->answer, &history);
     }
 
     G_done_msg(_("Maximum value in output: %e."), multip * gausmax);

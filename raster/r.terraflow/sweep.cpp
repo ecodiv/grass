@@ -146,7 +146,8 @@ initializePQ() {
 #ifdef EM_PQUEUE
   if (stats)
     stats->comment("FLOW_DATASTRUCTURE: ext-memory pqueue");
-  flowpq = new FLOW_DATASTR(nrows * ncols);  
+  /* TODO: long -> off_t in include/iostream/empq.h */
+  flowpq = new FLOW_DATASTR((long)nrows * ncols);
 #endif
 #ifdef EMPQ_ADAPTIVE
   if (opt->verbose && stats) stats->comment("FLOW_DATASTRUCTURE: adaptive pqueue");
@@ -170,7 +171,7 @@ sweep(AMI_STREAM<sweepItem> *sweepstr, const flowaccumulation_type D8CUT,
   sweepItem* crtpoint;
   AMI_err ae;
   flowStructure x;	
-  long nitems;
+  off_t nitems;
   Rtimer rt;
   AMI_STREAM<sweepOutput>* outstr;
 
@@ -200,13 +201,13 @@ sweep(AMI_STREAM<sweepItem> *sweepstr, const flowaccumulation_type D8CUT,
   ae = sweepstr->seek(0);
   assert(ae == AMI_ERROR_NO_ERROR);
   G_important_message(_("Sweeping..."));
-  for (long k = 0; k < nitems; k++) {
+  for (off_t k = 0; k < nitems; k++) {
     
     /* cout << k << endl; cout.flush(); */
     /* read next sweepItem = (prio, elevwin, topoRankwin, dir) */
     ae = sweepstr->read_item(&crtpoint);
     if (ae != AMI_ERROR_NO_ERROR) {
-      fprintf(stderr, "sweep: k=%ld: cannot read next item..\n", k);
+      fprintf(stderr, "sweep: k=%" PRI_OFF_T ": cannot read next item..\n", k);
       exit(1);
     }
     /* cout << "k=" << k << " prio =" << crtpoint->getPriority() << "\n"; */

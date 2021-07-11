@@ -48,7 +48,7 @@ int max_cat(struct Map_info *Map, int layer);
 int main(int argc, char *argv[])
 {
     int i, ret;
-    char *in_name, *out_name, *bbox_name;
+    char *in_name, *out_name, *meta_name, *bbox_name;
     struct GModule *module;
     struct Option *old, *new, *bbox;
     struct Flag *append, *table_flag, *no_topo;
@@ -174,6 +174,12 @@ int main(int argc, char *argv[])
 	    Vect_close(&OutMap);
 	}
 
+	/* Get map name the table columns are derived from */
+	if (append->answer)
+	    meta_name = out_name;
+	else
+	    meta_name = old->answers[0];
+
 	i = 0;
 	while (old->answers[i]) {
 	    in_name = old->answers[i];
@@ -211,6 +217,9 @@ int main(int argc, char *argv[])
 		}
 		db_close_database_shutdown_driver(driver_in);
 	    }
+	    else {
+		G_fatal_error(_("Missing attribute table for vector map <%s>"), in_name);
+	    }
 
 	    /* Get the output table structure */
 	    if (i == 0 ) {
@@ -239,17 +248,25 @@ int main(int argc, char *argv[])
 
 		if (!table_in ||
 		    (table_out && !table_in) || (!table_out && table_in)) {
-		    G_fatal_error(_("Missing table"));
+		    G_fatal_error(_("Missing table for <%s>"), in_name);
 		}
 
 		if (G_strcasecmp(fi_in->key, key) != 0) {
-		    G_fatal_error(_("Key columns differ"));
+		    G_fatal_error(
+			_("Key (category) column names differ:"
+			  " <%s> from <%s> and <%s> from <%s>"),
+			fi_in->key, in_name,
+			key, meta_name);
 		}
 
 		ncols = db_get_table_number_of_columns(table_out);
 
 		if (ncols != db_get_table_number_of_columns(table_in)) {
-		    G_fatal_error(_("Number of columns differ"));
+		    G_fatal_error(
+			_("Number of columns differ:"
+			  " %d in <%s> and %d in <%s>"),
+			db_get_table_number_of_columns(table_in),
+			in_name, ncols, meta_name);
 		}
 
 		for (col = 0; col < ncols; col++) {
@@ -283,7 +300,16 @@ int main(int argc, char *argv[])
 			db_sqltype_to_Ctype(db_get_column_sqltype
 					    (column_out));
 		    if (ctype_in != ctype_out) {
-			G_fatal_error(_("Column types differ"));
+			G_fatal_error(
+			    _("Column types differ: "
+			      " <%s> from <%s> is <%s> and"
+			      " <%s> from <%s> is <%s>"),
+			    db_get_column_name(column_in),
+			    in_name,
+			    db_sqltype_name(db_get_column_sqltype(column_in)),
+			    db_get_column_name(column_out),
+			    meta_name,
+			    db_sqltype_name(db_get_column_sqltype(column_out)));
 		    }
 		    if (ctype_in == DB_C_TYPE_STRING &&
 			db_get_column_length(column_in) !=
@@ -457,9 +483,6 @@ int main(int argc, char *argv[])
     Vect_set_person(&OutMap, G_whoami());
 
     if (!no_topo->answer) {
-	if (append->answer)
-	    Vect_build_partial(&OutMap, GV_BUILD_NONE);
-
 	Vect_build_partial(&OutMap, GV_BUILD_BASE);
 
 	if (Vect_get_num_primitives(&OutMap, GV_BOUNDARY) > 0) {
@@ -471,14 +494,14 @@ int main(int argc, char *argv[])
 
 	    Vect_get_map_box(&OutMap, &box);
 
-	    if (abs(box.E) > abs(box.W))
-		xmax = abs(box.E);
+	    if (fabs(box.E) > fabs(box.W))
+		xmax = fabs(box.E);
 	    else
-		xmax = abs(box.W);
-	    if (abs(box.N) > abs(box.S))
-		ymax = abs(box.N);
+		xmax = fabs(box.W);
+	    if (fabs(box.N) > fabs(box.S))
+		ymax = fabs(box.N);
 	    else
-		ymax = abs(box.S);
+		ymax = fabs(box.S);
 
 	    if (xmax < ymax)
 		xmax = ymax;
@@ -559,8 +582,9 @@ int main(int argc, char *argv[])
 
 	    /* Boundaries are hopefully clean, build areas */
 	    G_message("%s", separator);
-	    Vect_build_partial(&OutMap, GV_BUILD_NONE);
 	}
+
+	Vect_build_partial(&OutMap, GV_BUILD_NONE);
 	Vect_build(&OutMap);
     }
     Vect_close(&OutMap);
@@ -615,7 +639,7 @@ int copy_records(dbDriver * driver_in, dbString * table_name_in,
 
     while (1) {
 	int more;
-	char buf[2000];
+	char buf[DB_SQL_MAX];
 
 	if (db_fetch(&cursor, DB_NEXT, &more) != DB_OK) {
 	    db_close_cursor(&cursor);

@@ -507,12 +507,13 @@ AC_DEFUN([SC_CONFIG_CFLAGS], [
             LDFLAGS="-Wl,--export-dynamic,--enable-runtime-pseudo-reloc"
             LD_LIBRARY_PATH_VAR="PATH"
             ;;
-	*-apple-darwin*)
-	    SHLIB_CFLAGS="-fno-common"
-	    SHLIB_SUFFIX=".dylib"
-	    SHLIB_LD="cc -dynamiclib -compatibility_version \${GRASS_VERSION_MAJOR}.\${GRASS_VERSION_MINOR} -current_version \${GRASS_VERSION_MAJOR}.\${GRASS_VERSION_MINOR} -install_name \${INST_DIR}/lib/lib\${LIB_NAME}\${SHLIB_SUFFIX}"
-	    LD_LIBRARY_PATH_VAR="DYLD_LIBRARY_PATH"
-	    ;;
+        *-apple-darwin*)
+            SHLIB_CFLAGS="-fno-common"
+            SHLIB_SUFFIX=".dylib"
+            SHLIB_LD="${CC} -dynamiclib -compatibility_version \${GRASS_VERSION_MAJOR}.\${GRASS_VERSION_MINOR} -current_version \${GRASS_VERSION_MAJOR}.\${GRASS_VERSION_MINOR} -install_name @rpath/lib\${LIB_NAME}\${SHLIB_SUFFIX}"
+            LDFLAGS="-Wl,-rpath,${INSTDIR}/lib,-rpath,\${GISBASE}/lib"
+            LD_LIBRARY_PATH_VAR="LD_RUN_PATH"
+            ;;
 	*-sun-solaris*)
 	    # Note: If _REENTRANT isn't defined, then Solaris
 	    # won't define thread-safe library routines.
@@ -561,6 +562,7 @@ AC_DEFUN([SC_CONFIG_CFLAGS], [
 	    SHLIB_CFLAGS="-fPIC"
 	    #SHLIB_LD="ld -Bshareable -x"
 	    SHLIB_LD="${CC} -shared"
+            SHLIB_LD_FLAGS="-Wl,-soname,\$(notdir \$[@])"
 	    SHLIB_SUFFIX=".so"
 	    LDFLAGS="-export-dynamic"
 	    #LD_SEARCH_FLAGS='-rpath ${LIB_RUNTIME_DIR}'

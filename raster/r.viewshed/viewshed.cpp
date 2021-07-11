@@ -151,9 +151,10 @@ AEvent *allocate_eventlist(GridHeader * hd)
     }
     else {
 	/* this is the max value of size_t */
-	long long maxsizet = ((long long)1 << (sizeof(size_t) * 8 - 1)) - 1;
+	long long m = ((long long)1 << (sizeof(size_t) * 8 - 1)),
+		  maxsizet = m - 1;
 
-	maxsizet += ((long long)1 << (sizeof(size_t) * 8 - 1));
+	maxsizet += m;
 
 	G_debug(1, "max size_t is %lld", maxsizet);
 
@@ -282,6 +283,11 @@ MemoryVisibilityGrid *viewshed_in_memory(char *inputfname, GridHeader * hd,
 	if (!is_nodata(visgrid->grid->hd, data[1][i]) &&
 	    !is_point_outside_max_dist(*vp, *hd, sn.row, sn.col,
 				       viewOptions.maxDist)) {
+	    if (viewOptions.doDirection &&
+		    !is_point_inside_angle(*vp, sn.row, sn.col,
+					   viewOptions.horizontal_angle_min,
+					   viewOptions.horizontal_angle_max))
+		continue;
 	    /*calculate Distance to VP and Gradient, store them into sn */
 	    /* need either 3 elevation values or 
 	     * 3 gradients calculated from 3 elevation values */
@@ -527,6 +533,11 @@ IOVisibilityGrid *viewshed_external(char *inputfname, GridHeader * hd,
 	if (!is_nodata(visgrid->hd, data[1][i]) &&
 	    !is_point_outside_max_dist(*vp, *hd, sn.row, sn.col,
 				       viewOptions.maxDist)) {
+	    if (viewOptions.doDirection &&
+		    !is_point_inside_angle(*vp, sn.row, sn.col,
+					   viewOptions.horizontal_angle_min,
+					   viewOptions.horizontal_angle_max))
+		continue;
 	    /*calculate Distance to VP and Gradient, store them into sn */
 	    /* need either 3 elevation values or 
 	     * 3 gradients calculated from 3 elevation values */

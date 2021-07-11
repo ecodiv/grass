@@ -76,7 +76,7 @@ int main(int argc, char *argv[])
     G_add_keyword(_("category"));
     G_add_keyword(_("layer"));
     module->description =
-	_("Attaches, deletes or reports vector categories to map geometry.");
+	_("Attaches, deletes or reports vector categories to/from/of map geometry.");
 
     in_opt = G_define_standard_option(G_OPT_V_INPUT);
 
@@ -537,7 +537,7 @@ int main(int argc, char *argv[])
 			freps[fld]->table = G_store(Fi->table);
 		    }
 		    else {
-			freps[fld]->table = '\0';
+			freps[fld]->table = NULL;
 		    }
 		}
 
@@ -601,7 +601,7 @@ int main(int argc, char *argv[])
 			    freps[fld]->table = G_store(Fi->table);
 			}
 			else {
-			    freps[fld]->table = '\0';
+			    freps[fld]->table = NULL;
 			}
 		    }
 

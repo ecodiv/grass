@@ -421,7 +421,7 @@ int main(int argc, char **argv)
         /* TODO: allow zrange to be used without region */
         if (use_zrange && !point_in_region_3d(&comp_region, x, y, z))
             continue;
-        if (allowed_cats &&
+        if (layer > 0 && allowed_cats &&
             !Vect_cats_in_constraint(cats, layer, allowed_cats))
             continue;
 
@@ -436,9 +436,28 @@ int main(int argc, char **argv)
          * - some points miss category (not handled)
          * Here we assume that only one cat has meaning for grid decimation.
          * If no layer available, cat contains junk and shouldn't be used.
+	 * 
+	 * TODO done
          */
-        if (layer > 0)
-            Vect_cat_get(cats, layer, &cat);
+	cat = -1;
+        if (layer > 0) {
+	    if (allowed_cats) {
+		int i;
+
+		for (i = 0; i < cats->n_cats; i++) {
+		    if (cats->field[i] == layer &&
+			Vect_cat_in_cat_list(cats->cat[i], allowed_cats)) {
+			cat = cats->cat[i];
+			break;
+		    }
+		}
+		return 0;
+	    }
+	    else
+		Vect_cat_get(cats, layer, &cat);
+	    if (cat < 0)
+		continue;
+	}
 
         /* using callback when using grid, direct call otherwise */
         if (do_grid_decimation)
@@ -459,13 +478,13 @@ int main(int argc, char **argv)
 
     Vect_hist_command(&voutput);
 
-    if (write_context.write_cats == TRUE && !notab_flag->answer) {
-	copy_tabs(&vinput, &voutput);
-    }
-
     Vect_close(&vinput);
-    if (!notopo_flag->answer)
+    if (!notopo_flag->answer) {
         Vect_build(&voutput);
+	if (write_context.write_cats == TRUE && !notab_flag->answer) {
+	    copy_tabs(&vinput, &voutput);
+	}
+    }
     Vect_close(&voutput);
 
     if (do_grid_decimation)

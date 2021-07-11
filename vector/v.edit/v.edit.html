@@ -5,7 +5,7 @@ via command line interface.
 
 <p><em>v.edit</em> supports only "simple" vector features: points,
 centroids, lines and boundaries. Currently, only 2D vector features
-(except of tool <b>zbulk</b>) are supported.
+(except of <b>tool=zbulk</b>) are supported.
 
 <p>Provides editing features' geometry. Attribute data connected to the
 vector map are not modified at all.
@@ -31,7 +31,7 @@ covered by two bounding boxes (center at 599505,4921010 and
 
 <h2>NOTES</h2>
 
-If no vector features are selected or the flag <b>-t</b> is
+If no vector features are selected or the flag <b>-b</b> is
 used, topology is not build at the end.
 
 <h2>USAGE</h2>
@@ -413,8 +413,8 @@ v.edit map=roads tool=select bbox=598260,4919730,605100,4926240 query=length thr
 
 <h3>Fix height of contours</h3>
 
-Intput vector map contains 2D lines representing contours. Height can
-be assign to the contours using tool <b>zbulk</b>. First of all 2D
+Input vector map contains 2D lines representing contours. Height can
+be assign to the contours using <b>tool=zbulk</b>. First of all 2D
 lines need to be converted to 3D lines:
 
 <div class="code"><pre>
@@ -449,7 +449,10 @@ v.edit a2 tool=zbulk bbox=586121.25049368,4911970.21547109,603092.60466035,49270
 
 Original author: Wolf Bergenheim - independent developer<br>
 Initial updates: Jachym Cepicky, Mendel University of Agriculture and Forestry in Brno, Czech Republic<br>
-Major update by Martin Landa, FBK-irst (formerly ITC-irst), Trento, Italy
+Major update by Martin Landa, FBK-irst (formerly ITC-irst), Trento, Italy<br>
+Extend tools by Huidae Cho
 
+<!--
 <p>
 <i>Last changed: $Date$</i>
+-->

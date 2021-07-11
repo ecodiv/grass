@@ -4,7 +4,7 @@
 
 <em>g.extension</em> downloads and installs, removes or updates
 extensions (addons) from the official
-<a href="https://grass.osgeo.org/grass7/manuals/addons/">GRASS GIS Addons repository</a>
+<a href="https://grass.osgeo.org/grass8/manuals/addons/">GRASS GIS Addons repository</a>
 or from user-specified source code repositories into the local GRASS GIS
 installation.
 <p>
@@ -37,8 +37,8 @@ GRASS GIS extensions are installed by <em>g.extension</em> into a dedicated
 directory.
 The default is a directory for application data and settings inside
 the user's home directory. 
-On GNU/Linux it is <tt>$HOME/.grass7/addons</tt>,
-on MS-Windows it is <tt>$APPDATA\GRASS7\addons</tt>.
+On GNU/Linux it is <tt>$HOME/.grass8/addons</tt>,
+on MS-Windows it is <tt>%APPDATA%\Roaming\GRASS8\addons</tt>.
 The name of the directory is stored in the <tt>GRASS_ADDON_BASE</tt>
 environmental variable.
 
@@ -59,16 +59,16 @@ in GRASS GIS is in this case in the responsibility of the user.
 
 <h3>Source code sources and repositories</h3>
 
-<h4>GRASS GIS Addons SVN repository</h4>
+<h4>GRASS GIS Addons repository on GitHub</h4>
 By default, <em>g.extension</em> installs extensions from the official
-GRASS GIS Addons SVN repository. However, different sources can be specified
+GRASS GIS Addons GitHub repository. However, different sources can be specified
 using the <b>url</b> option.
 
 <p>
 Individual extensions can also be installed by providing a URL to the
-source code on OSGeo Trac. This, however, works only for certain directories
-where the download of ZIP files was enabled by project administrators of
-the trac server.
+source code on GitHub or OSGeo Trac. The latter, however, works only for certain
+directories where the download of ZIP files was enabled by project administrators
+of the trac server.
 
 <h4>Local source code directory</h4>
 Optionally, new extension can be also installed from a source code placed
@@ -104,7 +104,8 @@ or group of modules.
 
 <h4>Needed directory layout</h4>
 When none of the above sources is identified, <em>g.extension</em> assumes
-that the source is a Subversion repository and uses the <em>svn</em> command
+<!-- TODO: update this description -->
+that the source is in a GitHub repository and uses the <em>svn</em> command
 line tool to obtain the source code. The expected structure of the repository
 should be the same as the one of the official repository.
 
@@ -184,7 +185,13 @@ g.extension extension=r.stream.distance operation=remove
 Simple URL to GitHub, GitLab, Bitbucket repositories:
 
 <div class="code"><pre>
-g.extension r.example url=github.com/johnsmith/r.example
+g.extension r.example.plus url="https://github.com/wenzeslaus/r.example.plus"
+</pre></div>
+
+Simple URL to GitHub, GitLab, Bitbucket repositories from a specific (e.g. development) branch:
+
+<div class="code"><pre>
+g.extension r.example.plus url="https://github.com/wenzeslaus/r.example.plus" branch=master
 </pre></div>
 
 Simple URL to OSGeo Trac (downloads a ZIP file, requires download to be enabled in Trac):
@@ -252,9 +259,9 @@ with the version number) must be installed.
 </em>
 
 <p>
-<a href="https://grass.osgeo.org/grass7/manuals/addons/">GRASS GIS 7 Addons Manual pages</a>
+<a href="https://grass.osgeo.org/grass8/manuals/addons/">GRASS GIS 8 Addons Manual pages</a>
 <br>
-<a href="http://grasswiki.osgeo.org/wiki/GRASS_AddOns">GRASS Addons</a> wiki page.
+<a href="https://grasswiki.osgeo.org/wiki/GRASS_AddOns">GRASS Addons</a> wiki page.
 
 <h2>AUTHORS</h2>
 
@@ -262,5 +269,7 @@ Markus Neteler (original shell script)<br>
 Martin Landa, Czech Technical University in Prague, Czech Republic (Python rewrite)<br>
 Vaclav Petras, <a href="http://gis.ncsu.edu/osgeorel/">NCSU OSGeoREL</a> (support for general sources, partial refactoring)
 
+<!--
 <p>
 <i>Last changed: $Date$</i>
+-->

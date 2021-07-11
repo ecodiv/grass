@@ -118,8 +118,8 @@ int OUTGR(void);
 int min(int, int);
 int max(int, int);
 
-void cube(int, int);
-void (*func) (int, int);
+/*void cube(int, int);
+void (*func) (int, int);*/
 
 void joules2(struct SunGeometryConstDay *sunGeom,
 	     struct SunGeometryVarDay *sunVarGeom,
@@ -187,6 +187,7 @@ double o_orig, z1;
 double horizonStep;
 double ltime, tim, timo;
 double declination;	/* Contains the negative of the declination at the chosen day */
+double solar_constant;
 
 /*
  * double lum_C31_l, lum_C33_l;
@@ -230,7 +231,7 @@ int main(int argc, char *argv[])
 	struct Option *elevin, *aspin, *aspect, *slopein, *slope, *linkein,
 	    *lin, *albedo, *longin, *alb, *latin, *coefbh, *coefdh,
 	    *incidout, *beam_rad, *insol_time, *diff_rad, *refl_rad,
-	    *glob_rad, *day, *step, *declin, *ltime, *dist, *horizon,
+	    *glob_rad, *day, *step, *declin, *solar_cnst, *ltime, *dist, *horizon,
 	    *horizonstep, *numPartitions, *civilTime, *threads;
     }
     parm;
@@ -469,6 +470,14 @@ int main(int argc, char *argv[])
     parm.declin->required = NO;
     parm.declin->description =
 	_("Declination value (overriding the internally computed value) [radians]");
+
+    parm.solar_cnst = G_define_option();
+    parm.solar_cnst->key = "solar_constant";
+    parm.solar_cnst->type = TYPE_DOUBLE;
+    parm.solar_cnst->required = NO;
+    parm.solar_cnst->answer = "1367";
+    parm.solar_cnst->description =
+	_("Solar constant [W/m^2]");
 
     parm.ltime = G_define_option();
     parm.ltime->key = "time";
@@ -741,6 +750,11 @@ int main(int argc, char *argv[])
 	declination = -declin;
     }
 
+    if (parm.solar_cnst->answer)
+        sscanf(parm.solar_cnst->answer, "%lf", &solar_constant);
+    else
+        solar_constant = 1367;
+
     if (ttime != 0) {
 	/* Shadow for just one time during the day */
 	if (horizon == NULL) {
@@ -915,7 +929,7 @@ int INPUT_part(int offset, double *zmax)
 
     if (longin != NULL) {
 	cell7 = Rast_allocate_f_buf();
-	if (latitudeArray == NULL) {
+	if (longitudeArray == NULL) {
             if (!(longitudeArray = G_alloc_fmatrix(numRows, n))) 
             {
                 G_fatal_error(_("Out of memory"));
@@ -1671,9 +1685,9 @@ void where_is_point(double *length, struct SunGeometryVarDay *sunVarGeom,
  * }
  */
 
-void cube(jmin, imin)
+/*void cube(jmin, imin)
 {
-}
+}*/
 
 
 /*////////////////////////////////////////////////////////////////////// */
@@ -1823,9 +1837,13 @@ void calculate(double singleSlope, double singleAspect, double singleAlbedo,
 	}
 	sunVarGeom.zmax = zmax;
         shadowoffset_base = (j % (numRows)) * n * arrayNumInt;
-    #pragma omp parallel firstprivate(q1,tan_lam_l,z1,i,shadowoffset,longitTime,coslat,coslatsq,func,latitude,longitude,sin_phi_l,latid_l,sin_u,cos_u,sin_v,cos_v,lum, gridGeom,sunGeom,sunVarGeom,sunSlopeGeom,sunRadVar, elevin,aspin,slopein,civiltime,linkein,albedo,latin,coefbh,coefdh,incidout,longin,horizon,beam_rad,insol_time,diff_rad,refl_rad,glob_rad,mapset,per,decimals,str_step )
+    #pragma omp parallel firstprivate(q1,tan_lam_l,z1,i,shadowoffset,longitTime,coslat,coslatsq,latitude,longitude,sin_phi_l,latid_l,sin_u,cos_u,sin_v,cos_v,lum,gridGeom,elevin,aspin,slopein,civiltime,linkein,albedo,latin,coefbh,coefdh,incidout,longin,horizon,beam_rad,insol_time,diff_rad,refl_rad,glob_rad,mapset,per,decimals,str_step)
     {
-      #pragma omp for schedule(dynamic) 
+      #pragma omp for schedule(dynamic)                                                        \
+                      firstprivate(sunGeom,sunVarGeom,sunSlopeGeom,sunRadVar)                  \
+                      lastprivate(sunGeom,sunVarGeom,sunSlopeGeom,sunRadVar)                   \
+                      reduction(max : linke_max, albedo_max, lat_max, sunrise_max, sunset_max) \
+                      reduction(min : linke_min, albedo_min, lat_min, sunrise_min, sunset_min)
 	for (i = 0; i < n; i++) {
             shadowoffset = shadowoffset_base + (arrayNumInt * i);
 	    if (useCivilTime()) {
@@ -1844,7 +1862,7 @@ void calculate(double singleSlope, double singleAspect, double singleAlbedo,
 		coslatsq = coslat * coslat;
 	    }
 
-	    func = NULL;
+	    /* func = NULL; */
 
 	    sunVarGeom.z_orig = z1 = sunVarGeom.zp = z[arrayOffset][i];
 
@@ -2026,7 +2044,7 @@ void calculate(double singleSlope, double singleAspect, double singleAlbedo,
 
     Rast_append_format_history(
 	&hist,
-	" Solar constant (W/m^2):                   1367");
+	" Solar constant (W/m^2):                   %f", solar_constant);
     Rast_append_format_history(
 	&hist,
 	" Extraterrestrial irradiance (W/m^2):      %f",

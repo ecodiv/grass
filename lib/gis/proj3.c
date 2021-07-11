@@ -11,6 +11,9 @@
   \author Original author CERL
  */
 
+/* TODO: the G_database_*() functions should be renamed to G_location_*()
+ * because they apply to a GRASS location, not to a GRASS database */
+
 #include <string.h>
 #include <grass/gis.h>
 #include <grass/glocale.h>
@@ -172,7 +175,7 @@ double G_database_units_to_meters_factor(void)
   \brief Get datum name for the current location
   
   Returns a pointer to the name of the map datum of the current
-  database. If there is no map datum explicitely associated with the
+  database. If there is no map datum explicitly associated with the
   actual database, the standard map datum WGS84 is returned, on error
   a NULL pointer is returned.
   

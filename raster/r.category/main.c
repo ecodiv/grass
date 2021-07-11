@@ -1,7 +1,7 @@
 
 /****************************************************************************
  *
- * MODULE:       r.cats
+ * MODULE:       r.category (formerly r.cats)
  *
  * AUTHOR(S):    Michael Shapiro - CERL
  *		 Hamish Bowman, Dunedin, New Zealand  (label creation opts)
@@ -9,7 +9,7 @@
  * PURPOSE:      Prints category values and labels associated with
  *		 user-specified raster map layers.
  *
- * COPYRIGHT:    (C) 2006 by the GRASS Development Team
+ * COPYRIGHT:    (C) 2006-2019 by the GRASS Development Team
  *
  *               This program is free software under the GNU General Public
  *               License (>=v2). Read the file COPYING that comes with GRASS
@@ -184,12 +184,15 @@ int main(int argc, char *argv[])
 		if (!G_getl2(buf, sizeof(buf), fp))
 		    break;
 
+		G_debug(1, "rule input (separator: <%s>): <%s>", fs, buf);
 		tokens = G_tokenize(buf, fs);
 		ntokens = G_number_of_tokens(tokens);
+		G_debug(1, "tokens found: <%d>", ntokens);
 
 		if (ntokens == 3) {
 		    d1 = strtod(tokens[0], &e1);
 		    d2 = strtod(tokens[1], &e2);
+		    G_debug(1, "d1: <%f>, d2: <%f>, tokens[0]: <%s>, tokens[1]: <%s>", d1, d2, tokens[0], tokens[1]);
 		    if (*e1 == 0 && *e2 == 0)
 			Rast_set_d_cat(&d1, &d2, tokens[2], &cats);
 		    else
@@ -197,6 +200,7 @@ int main(int argc, char *argv[])
 		}
 		else if (ntokens == 2) {
 		    d1 = strtod(tokens[0], &e1);
+		    G_debug(1, "d1: <%f>, tokens[0]: <%s>, tokens[1]: <%s>", d1, tokens[0], tokens[1]);
 		    if (*e1 == 0)
 			Rast_set_d_cat(&d1, &d1, tokens[1], &cats);
 		    else
@@ -209,7 +213,7 @@ int main(int argc, char *argv[])
 
 		if (parse_error)
 		    G_fatal_error(_("Incorrect format of input rules. "
-				    "Check separators. Invalid line is:\n%s"), buf);
+				    "Is the first column numeric? Or check separators. Invalid line is:\n%s"), buf);
 	    }
 	    G_free_tokens(tokens);
 	    Rast_write_cats(name, &cats);
@@ -280,7 +284,7 @@ int main(int argc, char *argv[])
     }
     else {
 	if (map_type != CELL_TYPE)
-	    G_warning(_("The map is floating point! Ignoring cats list, using vals list"));
+	    G_warning(_("The map is floating point! Ignoring cats list, using values list"));
 	else {			/* integer map */
 
 	    for (i = 0; parm.cats->answers[i]; i++)
@@ -297,7 +301,7 @@ int main(int argc, char *argv[])
 	}
     }
     if (parm.vals->answer == NULL)
-	G_fatal_error(_("vals argument is required for floating point map!"));
+	G_fatal_error(_("Parameter 'values' is required for floating point map!"));
     for (i = 0; parm.vals->answers[i]; i++)
 	if (!scan_vals(parm.vals->answers[i], &dx)) {
 	    G_usage();

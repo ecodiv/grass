@@ -2,7 +2,7 @@ FROM ubuntu:18.04
 
 LABEL authors="Vaclav Petras,Markus Neteler"
 LABEL maintainer="wenzeslaus@gmail.com,neteler@osgeo.org"
- 
+
 # system environment
 ENV DEBIAN_FRONTEND noninteractive
 
@@ -43,18 +43,24 @@ RUN apt-get update \
         g++ \
         gettext \
         gdal-bin \
+        language-pack-en-base \
         libfftw3-bin \
         make \
         ncurses-bin \
         netcdf-bin \
         proj-bin \
         proj-data \
-        python \
-        python-dev \
-        python-numpy \
-        python-pil \
-        python-ply \
-        python-six \
+        python3 \
+        python3-dateutil \
+        python3-dev \
+        python3-numpy \
+        python3-pil \
+        python3-pip \
+        python3-ply \
+        python3-six \
+        python3-wxgtk4.0 \
+        python3-gdal \
+        python3-matplotlib \
         sqlite3 \
         subversion \
         unixodbc-dev \
@@ -106,7 +112,7 @@ RUN ./configure \
     && make -j $NUMTHREADS && make install && ldconfig
 
 # enable simple grass command regardless of version number
-RUN ln -s /usr/local/bin/grass* /usr/local/bin/grass
+RUN if [ ! -e /usr/local/bin/grass ] ; then ln -s /usr/local/bin/grass* /usr/local/bin/grass ; fi
 
 # Reduce the image size
 RUN apt-get autoremove -y

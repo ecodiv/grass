@@ -151,6 +151,8 @@ int main(int argc, char *argv[])
     viewOptions.doCurv = FALSE;
     viewOptions.doRefr = FALSE;
     viewOptions.refr_coef = 1.0/7.0;
+    viewOptions.horizontal_angle_min = 0;
+    viewOptions.horizontal_angle_max = 360;
 
     parse_args(argc, argv, &vpRow, &vpCol, &viewOptions, &memSizeBytes,
 	       &region);
@@ -177,7 +179,7 @@ int main(int argc, char *argv[])
        requires some changes. To do. */
     if (!(vp.row < hd->nrows && vp.col < hd->ncols)) {
 	/* unfortunately, we don't know the point coordinates now */
-	G_warning(_("Region extent: north=%d, south=%d, east=%d, west=%d"),
+	G_warning(_("Region extent: north=%f, south=%f, east=%f, west=%f"),
 	    hd->window.north, hd->window.south, hd->window.east, hd->window.west);
 	G_warning(_("Region extent: rows=%d, cols=%d"), hd->nrows, hd->ncols);
 	G_warning(_("Viewpoint: row=%d, col=%d"), vp.row, vp.col);
@@ -499,7 +501,7 @@ parse_args(int argc, char *argv[], int *vpRow, int *vpCol,
     obsElevOpt->required = NO;
     obsElevOpt->key_desc = "value";
     obsElevOpt->description = _("Viewing elevation above the ground");
-    obsElevOpt->answer = "1.75";
+    obsElevOpt->answer = G_store("1.75");
     obsElevOpt->guisection = _("Settings");
 
     /* target elevation offset */
@@ -511,7 +513,7 @@ parse_args(int argc, char *argv[], int *vpRow, int *vpCol,
     tgtElevOpt->required = NO;
     tgtElevOpt->key_desc = "value";
     tgtElevOpt->description = _("Offset for target elevation above the ground");
-    tgtElevOpt->answer = "0.0";
+    tgtElevOpt->answer = G_store("0.0");
     tgtElevOpt->guisection = _("Settings");
 
     /* max distance */
@@ -529,6 +531,19 @@ parse_args(int argc, char *argv[], int *vpRow, int *vpCol,
     sprintf(infdist, "%d", INFINITY_DISTANCE);
     maxDistOpt->answer = infdist;
     maxDistOpt->guisection = _("Settings");
+
+    /* angle range */
+    struct Option *direction;
+
+    direction = G_define_option();
+    direction->key = "direction_range";
+    direction->type = TYPE_DOUBLE;
+    direction->required = NO;
+    direction->key_desc = "min,max";
+    direction->options = "0-360";
+    direction->description =
+	_("Minimum and maximum horizontal angle limiting viewshed (0 is East, counterclockwise)");
+    direction->guisection = _("Settings");
 
     /* atmospheric refraction coeff. 1/7 for visual, 0.325 for radio waves, ... */
     /* in future we might calculate this based on the physics, for now we
@@ -554,7 +569,7 @@ parse_args(int argc, char *argv[], int *vpRow, int *vpCol,
     refrCoeffOpt->description = _("Refraction coefficient");
     refrCoeffOpt->type = TYPE_DOUBLE;
     refrCoeffOpt->required = NO;
-    refrCoeffOpt->answer = "0.14286";
+    refrCoeffOpt->answer = G_store("0.14286");
     refrCoeffOpt->options = "0.0-1.0";
     refrCoeffOpt->guisection = _("Refraction");
     
@@ -568,7 +583,7 @@ parse_args(int argc, char *argv[], int *vpRow, int *vpCol,
     memAmountOpt->key_desc = "value";
     memAmountOpt->description =
 	_("Amount of memory to use in MB");
-    memAmountOpt->answer = "500";
+    memAmountOpt->answer = G_store("500");
 
     /* temporary STREAM path */
     struct Option *streamdirOpt;
@@ -607,6 +622,12 @@ parse_args(int argc, char *argv[], int *vpRow, int *vpCol,
     viewOptions->maxDist = atof(maxDistOpt->answer);
     if (viewOptions->maxDist < 0 && viewOptions->maxDist != INFINITY_DISTANCE) {
 	G_fatal_error(_("A negative max distance value is not allowed"));
+    }
+    viewOptions->doDirection = 0;
+    if (direction->answer) {
+        viewOptions->horizontal_angle_min = atof(direction->answers[0]);
+        viewOptions->horizontal_angle_max = atof(direction->answers[1]);
+        viewOptions->doDirection = 1;
     }
 
     viewOptions->doCurv = curvature->answer;

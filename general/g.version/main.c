@@ -92,6 +92,10 @@ int main(int argc, char *argv[])
 
     gish_rev = G_define_flag();
     gish_rev->key = 'r';
+    /* this was never the library revision number and date
+     * it was the revision number and date of gis.h
+     * now it is the git hash and date of all GRASS headers
+     * (and anything else in include) */
     gish_rev->description =
 	_("Print also the GIS library revision number and date");
     gish_rev->guisection = _("Additional info");
@@ -99,7 +103,7 @@ int main(int argc, char *argv[])
     extended = G_define_flag();
     extended->key = 'e';
     extended->label = _("Print also extended info for additional libraries");
-    extended->description = _("GDAL/OGR, PROJ.4, GEOS");
+    extended->description = _("GDAL/OGR, PROJ, GEOS");
     extended->guisection = _("Additional info");
 
     shell = G_define_flag();
@@ -140,26 +144,18 @@ int main(int argc, char *argv[])
     }
 
     if (gish_rev->answer) {
-	char **rev_ver = G_tokenize(GIS_H_VERSION, "$");
-	char **rev_time = G_tokenize(GIS_H_DATE, "$");
-	const int tokens_expected = 3;
+	char *rev_ver = GIS_H_VERSION;
+	char *rev_time = GIS_H_DATE;
 	int no_libgis = FALSE;
 
-	/* if number of tokes is right, print it */
-	if (G_number_of_tokens(rev_ver) == tokens_expected &&
-	    G_number_of_tokens(rev_time) == tokens_expected) {
+	if (*rev_ver && *rev_time) {
 	    if (shell->answer) {
-                const char *p;
-                p = strstr(rev_ver[1], " ");
-		fprintf(stdout, "libgis_revision=%s\n",
-			p ? p + 1 : "00000");
-                p = strstr(rev_time[1], " ");
-		fprintf(stdout, "libgis_date=\"%s\"\n",
-			p ? p + 1 : "?");
+                fprintf(stdout, "libgis_revision=%s\n", rev_ver);
+                fprintf(stdout, "libgis_date=%s\n", rev_time);
 	    }
 	    else {
-		fprintf(stdout, "libgis %s\nlibgis %s\n", rev_ver[1],
-			rev_time[1]);
+		fprintf(stdout, "libgis revision: %s\n", rev_ver);
+		fprintf(stdout, "libgis date: %s\n", rev_time);
 	    }
 	}
 	else {
@@ -185,8 +181,6 @@ int main(int argc, char *argv[])
 	    G_debug(1, _("GIS_H_VERSION=\"%s\""), GIS_H_VERSION);
 	    G_debug(1, _("GIS_H_DATE=\"%s\""), GIS_H_DATE);
 	}
-	G_free_tokens(rev_ver);
-	G_free_tokens(rev_time);
     }
 
     if (extended->answer) {
@@ -200,15 +194,15 @@ int main(int argc, char *argv[])
 #endif
         if (strlen(proj) == 3) {
             if (shell->answer)
-                fprintf(stdout, "proj4=%c.%c.%c\n", proj[0], proj[1], proj[2]); 
+                fprintf(stdout, "proj=%c.%c.%c\n", proj[0], proj[1], proj[2]); 
             else
-                fprintf(stdout, "PROJ.4: %c.%c.%c\n", proj[0], proj[1], proj[2]); 
+                fprintf(stdout, "PROJ: %c.%c.%c\n", proj[0], proj[1], proj[2]); 
         }
         else {
             if (shell->answer)
-                fprintf(stdout, "proj4=%s\n", proj);
+                fprintf(stdout, "proj=%s\n", proj);
             else
-                fprintf(stdout, "PROJ.4: %s\n", proj);
+                fprintf(stdout, "PROJ: %s\n", proj);
         }
 #ifdef HAVE_GDAL
         if (shell->answer)

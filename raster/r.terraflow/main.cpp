@@ -128,14 +128,9 @@ parse_args(int argc, char *argv[]) {
       "SFD (D8) direction (meaningful only for MFD flow). "
       "If no answer is given it defaults to infinity.");
 
-  /* main memory */
+  /* raster cache memory */
   struct Option *mem;
-  mem = G_define_option() ;
-  mem->key         = "memory";
-  mem->type        = TYPE_INTEGER;
-  mem->required    = NO;
-  mem->answer      = (char *) "300";
-  mem->description = _("Maximum memory to be used (in MB)");
+  mem = G_define_standard_option(G_OPT_MEMORYMB);
 
   /* temporary STREAM path */
   struct Option *streamdir;
@@ -143,7 +138,7 @@ parse_args(int argc, char *argv[]) {
   streamdir->key        = "directory";
   streamdir->type       = TYPE_STRING;
   streamdir->required   = NO;
-  //streamdir->answer     = "";
+  /* streamdir->answer     = ""; */
   streamdir->description=
      _("Directory to hold temporary files (they can be large)");
 
@@ -413,20 +408,20 @@ setSinkWatershedColorTable(char* cellname) {
 void
 printMaxSortSize(long nodata_count) {
   char buf[BUFSIZ];
-  long long  fillmaxsize = (long long)nrows*ncols*sizeof(waterWindowType);
-  long long  flowmaxsize = (long long)(nrows*ncols - nodata_count)*sizeof(sweepItem);
-  long long maxneed = (fillmaxsize > flowmaxsize) ? fillmaxsize: flowmaxsize;
+  off_t  fillmaxsize = (off_t)nrows*ncols*sizeof(waterWindowType);
+  off_t  flowmaxsize = ((off_t)nrows*ncols - nodata_count)*sizeof(sweepItem);
+  off_t maxneed = (fillmaxsize > flowmaxsize) ? fillmaxsize: flowmaxsize;
   maxneed =  2*maxneed; /* need 2*N to sort */
 
-  G_debug(1, "total elements=%ld, nodata elements=%ld",
-          (long)nrows * ncols, nodata_count);
+  G_debug(1, "total elements=%" PRI_OFF_T ", nodata elements=%ld",
+          (off_t)nrows * ncols, nodata_count);
   G_debug(1, "largest temporary files: ");
-  G_debug(1, "\t\t FILL: %s [%ld elements, %ldB each]",
+  G_debug(1, "\t\t FILL: %s [%" PRI_OFF_T " elements, %ldB each]",
           formatNumber(buf, fillmaxsize),
-          (long)nrows * ncols, sizeof(waterWindowType));
-  G_debug(1, "\t\t FLOW: %s [%ld elements, %ldB each]",
+          (off_t)nrows * ncols, sizeof(waterWindowType));
+  G_debug(1, "\t\t FLOW: %s [%" PRI_OFF_T " elements, %ldB each]",
           formatNumber(buf, flowmaxsize),
-          (long)nrows * ncols - nodata_count, sizeof(sweepItem));
+          (off_t)nrows * ncols - nodata_count, sizeof(sweepItem));
   G_debug(1, "Will need at least %s space available in %s",
           formatNumber(buf, maxneed),  	  /* need 2*N to sort */
           getenv(STREAM_TMPDIR));
@@ -514,7 +509,7 @@ main(int argc, char *argv[]) {
       record_args(argc, argv);
       {
 	char buf[BUFSIZ];
-	long grid_size = nrows * ncols;
+	off_t grid_size = (off_t) nrows * ncols;
 	*stats << "region size = " <<  formatNumber(buf, grid_size) << " elts "
 	       << "(" << nrows << " rows x " << ncols << " cols)\n";
 
@@ -589,7 +584,7 @@ main(int argc, char *argv[]) {
 
   sprintf(path, "%s/flowStream", streamdir->answer);
   flowStream = new AMI_STREAM<waterWindowBaseType>(path);
-  G_verbose_message(_("flowStream opened: len=%d\n", flowStream->stream_len());
+  G_verbose_message(_("flowStream opened: len=%lld\n", flowStream->stream_len());
   G_verbose_message(_("jumping to flow accumulation computation\n");
 #endif
   
